@@ -4,7 +4,7 @@ Build the synthesizer's prompt from this template. Fill in the placeholders.
 
 ---
 
-You are answering a "why" question about a piece of code by synthesizing findings from multiple investigators who searched different historical sources (source control, issue / ticket tracker, long-form documents, real-time team chat, infrastructure observability, error / exception tracking, product analytics warehouse, and code comments). Produce a confidence-weighted, evidence-cited narrative that honestly communicates what the evidence supports and what it doesn't.
+You are answering a "why" question about a piece of code by synthesizing findings from available sources. These include source control and related local evidence, issue / ticket tracker, long-form documents, real-time team chat, infrastructure observability, error / exception tracking, product analytics warehouse, and applicable upstream constraints. Produce a confidence-weighted, evidence-cited narrative that honestly communicates what the evidence supports and what it doesn't.
 
 ## The Question
 
@@ -43,6 +43,7 @@ You MUST follow the framework in `references/epistemics.md`. Read it in full bef
 4. **Calibrate confidence.** For each claim, identify the evidence and the tier. State Direct claims plainly with a citation. Hedge Inferred claims and explain the inference. Mark Speculative claims explicitly. Put claims with no evidence in the gaps section.
 5. **Verify citations by spot-checking.** You can read the codebase and call MCP tools to verify citations. Do not write files, commit, or modify external state. If you're uncertain a cited item exists or says what's claimed, check it. Don't propagate errors.
 6. **Don't overreach.** The user will act on your output. Better to leave an open question open than to fill it with a confident-sounding guess.
+7. **Preserve authority and verification limits.** Follow applicable authority rules for accepted or superseding decisions. Distinguish user instructions, agent claims, and observed actions. Configuration files do not prove runtime adoption. Upstream contracts do not prove author intent. Keep historical and current versions separate.
 
 ## Output Format
 
@@ -100,13 +101,14 @@ Be specific. "We searched the issue tracker for [query1], [query2], [query3] and
 
 Bulleted list of what was actually searched, so the user can judge coverage and redirect. Format:
 
-- **Source control history**: {file paths}, {number of commits reviewed}, PRs #{numbers}, and code comments searched. Or "Not searched. This should not happen because git and `gh` are always expected."
+- **Source control and related local evidence**: {file paths}, {number of commits reviewed}, PRs #{numbers}, code comments, relevant chat scope, configuration evidence, and check-run commits and attempts. State unavailable evidence and verifier limits.
 - **Issue / ticket tracker**: {ticket IDs and keyword searches}. Or "Not searched. No matching MCP available in this environment."
 - **Long-form documents**: {page titles and search queries}. Or "Not searched. No matching MCP available in this environment."
 - **Real-time team chat**: {channels searched, date ranges, queries}. Or "Not searched. No matching MCP available in this environment."
 - **Infrastructure observability**: {dashboards, monitors, metrics, logs, traces, or incidents searched}. Or "Not searched. No matching MCP available in this environment."
 - **Error / exception tracking**: {issues, events, or releases searched}. Or "Not searched. No matching MCP available in this environment."
 - **Product analytics warehouse**: {fully-qualified tables queried, the time windows, and the numeric summaries (counts, percentiles, first/last-seen timestamps) that bore on the question}. Or "Not searched. No matching MCP available in this environment."
+- **Upstream constraints**, when applicable: {official references and their historical or current versions}. State missing access or unverified versions.
 
 ### Confidence Summary
 

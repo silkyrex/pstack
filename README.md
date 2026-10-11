@@ -28,7 +28,7 @@ Some skills call other skills. Install these together:
 | Skill | Also install |
 |---|---|
 | `teach` | `how`, `why` |
-| `why` | `how` |
+| `why` | `how`, `recall`, `setup-pstack` |
 | `technical-writing` | `unslop` |
 | `architect` | `arena`, `how` |
 | `blast-radius` | `arena`, `how`, `why`, `unslop` |

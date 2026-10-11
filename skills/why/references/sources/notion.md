@@ -15,7 +15,11 @@ Notion is where "why" often lives in long-form before it becomes code. A signifi
 
 ## How to search it
 
-Use the Notion MCP.
+Use the available Notion search and fetch tools. Tool names below are examples; resolve their equivalents from the current tool catalog.
+
+For a personal goal, standard, preference, or prior decision, follow the context directory and authority rules named in applicable user instructions. Reuse exact sources already verified in this session. Start with the directory and one relevant source; expand only for a material gap. Keep those policies and their source documents in their existing homes.
+
+Record acceptance, effective scope, and explicit superseding decisions. Distinguish a current instruction from a proposal, draft, or historical snapshot. A recent edit alone does not establish authority or permission. Surface unresolved material conflicts with both sources. This investigation reads evidence; it does not rewrite decisions or create a second task system.
 
 1. **Keyword searches with `notion-search`.** Try:
    - The feature name
@@ -42,7 +46,7 @@ Use the Notion MCP.
 - **Doc vs. reality drift.** A spec may say "we'll do X" but the code actually does Y. Flag the divergence. The synthesizer will surface the contradiction.
 - **Boilerplate templates.** Some orgs require a "Why" section that gets filled with fluff. Look for specificity.
 - **Unlinked docs.** The most relevant doc may not be linked from anywhere. Broad keyword searches help.
-- **Multiple drafts.** If a topic has multiple docs, find the one that was finalized or most recently updated. Check dates.
+- **Multiple drafts.** Check acceptance, effective dates, and explicit superseding decisions. A finalized document or a recent edit may still be superseded. Follow the applicable authority rules rather than choosing by recency alone.
 - **Access-restricted pages.** If you can't access a page, note it as a gap.
 
 ## What to return
@@ -52,4 +56,4 @@ For each relevant doc:
 - Authors and last-updated date
 - The motivation text (verbatim quote), with page/section location
 - Relevant linked pages (so the synthesizer can cite them)
-- Whether the doc was finalized or draft
+- Whether the doc was accepted, proposed, draft, or superseded; its effective scope and any unresolved authority gap

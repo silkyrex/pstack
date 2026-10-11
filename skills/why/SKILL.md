@@ -1,6 +1,6 @@
 ---
 name: why
-description: "Use for 'why does X work this way', 'why we picked Y', design rationale, regressions, postmortems, or data-backed thresholds. Discovers available MCPs and queries each evidence category (source control, issue tracker, long-form docs, real-time chat, infrastructure observability, error tracking, product analytics warehouse) in parallel, then returns a cited read on decisions and tradeoffs. Use how for runtime behavior."
+description: "Use for 'why does X work this way', 'why we picked Y', design rationale, regressions, postmortems, or data-backed thresholds. Searches available evidence sources, including relevant chat history, configuration evidence, historical check failures, and version-matched upstream documentation, then returns a cited read on decisions and tradeoffs. Use how for runtime behavior."
 disable-model-invocation: true
 ---
 
@@ -61,23 +61,26 @@ Capture this as seed context (file paths, symbols, commits, PR numbers, linked t
 
 ### Discovery
 
-Before spawning investigators, list the MCP servers connected to your harness. Use the available-tools map when present. In Cursor, you can also inspect the `mcps/` directory it exposes for enabled MCP servers. In other harnesses, MCP tools usually appear in your tool list with the server name in the tool name (for example `mcp__<server>__<tool>` in Claude Code).
+Before spawning investigators, list the available local readers, CLIs, web tools, and MCP servers. Use the available-tools map when present. In Cursor, you can also inspect the `mcps/` directory it exposes for enabled MCP servers. In other harnesses, MCP tools usually appear in your tool list with the server name in the tool name (for example `mcp__<server>__<tool>` in Claude Code).
 
-Map each available MCP to one evidence category:
+Map each available tool to one evidence category:
 
-1. Source control history
+1. Source control history and related local evidence
 2. Issue / ticket tracker
 3. Long-form documents
 4. Real-time team chat
 5. Infrastructure observability
 6. Error / exception tracking
 7. Product analytics warehouse
+8. Upstream constraints, when the question involves an external API or dependency
 
-Source control is always available through git and `gh`. For the other six, classify using the MCP name, server instructions, tool names, and resource descriptors. If an MCP could fit more than one category, choose the one matching its primary evidence. Record ambiguous cases in the coverage map.
+Use git, available local readers, and `gh` for source control evidence. Classify the other sources using their tool names, instructions, and resource descriptors. If a tool could fit more than one category, choose the one matching its primary evidence. Record unavailable tools and ambiguous cases in the coverage map. A source file does not establish access.
+
+Read `references/source-playbook.md` to select the matching playbook and its existing owners. The source control investigator includes relevant chat, configuration, and check-run evidence using `code-archaeology.md`. The document investigator follows `notion.md` for authoritative decisions. Select `upstream-constraints.md` only when external constraints bear on the question. Reuse the owners referenced there; do not create another search or verification workflow.
 
 Aim for a complete **coverage map**, not a minimal one. Document the null, don't skip the search.
 
-Launch all matching investigators in a single message so they run concurrently. Don't ask one agent to cover multiple MCPs.
+When delegation is authorized, launch all matching investigators in a single message so they run concurrently. Don't ask one agent to cover multiple MCPs. When user instructions disable delegation, run the applicable investigations in the parent session.
 
 **Other harnesses.** The spawns in this skill use Cursor's `Task` tool. In another harness, use its subagent tool: `Agent` in Claude Code (`subagent_type: general-purpose`), `task` in OpenCode (`subagent_type: general`), `spawn_agent` in Codex. Keep the prompt and the model. Drop parameters your tool doesn't have. If your harness has no subagent tool, as in Pi without an extension, run each investigator yourself, one after another.
 
@@ -95,11 +98,11 @@ Each investigator gets:
 
 ### Investigator roster. One per available evidence category
 
-Spawn one investigator per category that has a matching MCP. Each owns exactly one tool or MCP.
+Spawn one investigator per category with available evidence access. Each owns its assigned source; related local evidence stays with the source control investigator. Respect the user's delegation and model-routing rules before any spawn.
 
 Each entry names the category and the kind of "why" it uniquely surfaces. Use it to know what to expect back, how to name a gap when a category returns empty, and (only in the rare provably-irrelevant case) to justify a skip.
 
-1. **Source control investigator**. Git history, `gh` for PRs, code comments, tests. Always spawn. The only guaranteed source. Best at surfacing *implementation-time rationale captured during review*.
+1. **Source control investigator**. Git history, `gh` for PRs, code comments, tests, and relevant local evidence. Reuse `recall` for transcript-search instructions and existing setup or verification skills for configuration evidence, as directed by `code-archaeology.md`. Best at surfacing *implementation-time rationale captured during review*.
 
 2. **Issue / ticket tracker investigator** (e.g. Linear, Jira, GitHub Issues, Plane, Shortcut MCP). Best at surfacing *the product or business forcing function*. Strongest when the why is external to engineering.
 
@@ -113,18 +116,20 @@ Each entry names the category and the kind of "why" it uniquely surfaces. Use it
 
 7. **Product analytics warehouse investigator** (e.g. Databricks, Snowflake, BigQuery, ClickHouse, dbt, Redshift MCP). Product/data view. Best at surfacing *product and data reality that shaped the code*. Strongest for flag-gated code, experiment-driven ships, data migrations, and "where did this number come from" questions.
 
+8. **Upstream constraints investigator**. Available web tools or official documentation readers. Uses `upstream-constraints.md` for version-matched API contracts and dependency release notes. Distinguishes an external constraint from evidence of the author's intent.
+
 ### When to skip an investigator
 
 Only skip with an **explicit, written justification** that goes in the final "Sources Consulted" section. Two valid reasons:
 
-- **No MCP is available for that category** in this environment. Flag this as a gap, not a choice. Example: "Real-time team chat skipped. No matching MCP available, so the conversational record was not searchable."
+- **No evidence access is available for that category** in this environment. Flag this as a gap, not a choice. Example: "Real-time team chat skipped. No matching tool available, so the conversational record was not searchable."
 - **The source is provably irrelevant**, not just "probably irrelevant." A high bar. Example: "Error / exception tracking skipped. Target is a build-time script with no runtime code path."
 
-If your scope assessment suggests a single-commit trivial target where the PR description already contains the complete answer, you may answer inline **only after** confirming all seven available category searches would be redundant. Say so explicitly. This should be rare.
+If your scope assessment suggests a single-commit trivial target where the PR description already contains the complete answer, you may answer inline **only after** confirming all applicable category searches would be redundant. Say so explicitly. This should be rare.
 
 ## Step 4. Synthesize
 
-Spawn one synthesizer subagent:
+When delegation is authorized, spawn one synthesizer subagent. Otherwise, synthesize in the parent session using the same inputs and template.
 
 - `subagent_type`: `generalPurpose`
 - `model`: the `why synthesizer` line, default `claude-opus-5-5-xhigh`
